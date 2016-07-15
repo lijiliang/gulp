@@ -6,12 +6,16 @@ const watch = require('gulp-watch');
 const fileinclude = require('gulp-file-include');     // 合并按模块引入html文件
 const less = require('gulp-less');
 const cssmin = require('gulp-minify-css');
-const plumber = require('gulp-plumber');          // 防止出错崩溃的插件
+const concat = require('gulp-concat');                 // 连接插件
+const uglify = require('gulp-uglify');                 // 压缩js文件
+const plumber = require('gulp-plumber');               // 防止出错崩溃的插件
 const sourcemaps = require('gulp-sourcemaps');         //生成map
-const browserSync = require('browser-sync').create();  // 实时刷新页面
+const browserSync = require('browser-sync').create();  //实时刷新页面
 const imagemin = require('gulp-imagemin');             //图片压缩
 const pngquant = require('imagemin-pngquant');         // 深度压缩png图片
-const cache = require('gulp-cache');                   //缓存，只对修改的内容进行处理
+const cache = require('gulp-cache');                   // 缓存，只对修改的内容进行处理
+const rev = require('gulp-rev');                       // 对文件名加MD5后缀
+const revCollector = require('gulp-rev-collector');    // 路径替换
 
 /*设置相关*/
 const config = require('./config.json');
@@ -42,16 +46,12 @@ const _cssFile = [
     `!${_cssSrcPath}/**/_*.less`
 ]
 
-/**
- * 监听html
- */
-gulp.task('html:dev',['browserSync'], ()=>{
-    watch(_htmlFile,{event:['add','change']},(file)=>{
-        console.log(file.path + ' complite！');
-    })
-    .pipe(fileinclude('@@'))
-    .pipe(gulp.dest(_htmlDistPath));
-});
+//js
+const _jsSrcPath = srcDir + '/js/';
+const _jsDistPath = distDir + '/js';
+const _jsFile = [
+    _jsSrcPath + '*.js'
+]
 /**
  * 编译html
 */
@@ -73,25 +73,32 @@ gulp.task('css:dev', ()=>{
     .pipe(plumber())   // 防止less编译出错崩溃
     .pipe(less())
     .pipe(cssmin())
+    //.pipe(rev())       // 文件名加MD5后缀
     .pipe(sourcemaps.write('./'))  //'../map'
     .pipe(gulp.dest(_cssDistPath))
+    // .pipe(rev.manifest('cssmap.json', {
+    //     merge: true
+    // }))       //- 生成一个cssmap.json
+    //.pipe(gulp.dest(distDir + '/map'))  //- 将 rev-manifest.json 保存到 map 目录内
     .on('end', ()=>{
         console.log('css 编译完成！')
     })
 })
 
 /**
- * 监听 less 自动编译
+ * 压缩js
  */
-gulp.task('css:watch', ()=>{
-    watch(_cssFile, {event:['add','change']}, (file)=>{
-        console.log(file.path + ' complite！');
+gulp.task('js:dev', ()=>{
+    gulp.src(_jsFile)
+    .pipe(uglify({
+        mangle: true,
+        compress: true,//类型：Boolean 默认：true 是否完全压缩
+        //mangle: {except: ['require' ,'exports' ,'module' ,'$']}//排除混淆关键字
+    }))
+    .pipe(gulp.dest(_jsDistPath))
+    .on('end', ()=>{
+        console.log('js 编译完成！')
     })
-    .pipe(sourcemaps.init())
-    .pipe(less())
-    .pipe(cssmin())
-    .pipe(sourcemaps.write('./'))  //'../map'
-    .pipe(gulp.dest(_cssDistPath))
 })
 
 /* 实时更新浏览器页面 */
@@ -140,9 +147,9 @@ gulp.task('dev:watch',['browserSync'],()=>{
     .pipe(sourcemaps.write('./'))  //'../map'
     .pipe(gulp.dest(_cssDistPath));
 
-    // w
+    // watch js
 
 })
 
 /*dev环境编译执行*/
-gulp.task('dev', ['html:build','css:dev','image:min','dev:watch','browserSync'])
+gulp.task('dev', ['html:build','css:dev','js:dev','image:min','dev:watch','browserSync'])
