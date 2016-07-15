@@ -6,6 +6,7 @@ const watch = require('gulp-watch');
 const fileinclude = require('gulp-file-include');     // 合并按模块引入html文件
 const less = require('gulp-less');
 const cssmin = require('gulp-minify-css');
+const plumber = require('gulp-plumber');          // 防止出错崩溃的插件
 const sourcemaps = require('gulp-sourcemaps');         //生成map
 const browserSync = require('browser-sync').create();  // 实时刷新页面
 const imagemin = require('gulp-imagemin');             //图片压缩
@@ -69,6 +70,7 @@ gulp.task('html:build', ()=>{
 gulp.task('css:dev', ()=>{
     gulp.src(_cssFile)
     .pipe(sourcemaps.init())
+    .pipe(plumber())   // 防止less编译出错崩溃
     .pipe(less())
     .pipe(cssmin())
     .pipe(sourcemaps.write('./'))  //'../map'
@@ -78,7 +80,7 @@ gulp.task('css:dev', ()=>{
     })
 })
 
-/**f
+/**
  * 监听 less 自动编译
  */
 gulp.task('css:watch', ()=>{
@@ -118,5 +120,29 @@ gulp.task('image:min', ()=>{
     .pipe(gulp.dest(distDir + '/img'))
 })
 
+// dev 监听任务
+gulp.task('dev:watch',['browserSync'],()=>{
+    // watch html
+    watch(_htmlFile,{event:['add','change']},(file)=>{
+        console.log(file.path + ' complite！');
+    })
+    .pipe(fileinclude('@@'))
+    .pipe(gulp.dest(_htmlDistPath));
+
+    // watch less css
+    watch(_cssFile, {event:['add','change']}, (file)=>{
+        console.log(file.path + ' complite！');
+    })
+    .pipe(sourcemaps.init())
+    .pipe(plumber())
+    .pipe(less())
+    .pipe(cssmin())
+    .pipe(sourcemaps.write('./'))  //'../map'
+    .pipe(gulp.dest(_cssDistPath));
+
+    // w
+
+})
+
 /*dev环境编译执行*/
-gulp.task('dev', ['html:build','html:dev','css:dev','css:watch','image:min','browserSync'])
+gulp.task('dev', ['html:build','css:dev','image:min','dev:watch','browserSync'])
