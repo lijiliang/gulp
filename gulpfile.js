@@ -16,6 +16,7 @@ const pngquant = require('imagemin-pngquant');         // 深度压缩png图片
 const cache = require('gulp-cache');                   // 缓存，只对修改的内容进行处理
 const rev = require('gulp-rev');                       // 对文件名加MD5后缀
 const revCollector = require('gulp-rev-collector');    // 路径替换
+const autoprefixer = require('gulp-autoprefixer');     // 自动添加css3前缀
 
 /*设置相关*/
 const config = require('./config.json');
@@ -72,6 +73,9 @@ gulp.task('css:dev', ()=>{
     .pipe(sourcemaps.init())
     .pipe(plumber())   // 防止less编译出错崩溃
     .pipe(less())
+    .pipe(autoprefixer({
+        browsers: ['last 6 versions']
+    }))
     .pipe(cssmin())
     //.pipe(rev())       // 文件名加MD5后缀
     .pipe(sourcemaps.write('./'))  //'../map'
