@@ -1,1 +1,1 @@
-{"version":3,"sources":["index.less"],"names":[],"mappings":"AAAA,KACI,WAAA","file":"index.css","sourcesContent":["body{\n    background: #f60;\n}\n"],"sourceRoot":"/source/"}
+{"version":3,"sources":["index.less"],"names":[],"mappings":"AAAA,KACI,WAAA","file":"index.css","sourcesContent":["body{\r\n    background: #f60;\r\n}\r\n"],"sourceRoot":"/source/"}

@@ -1,1 +1,2 @@
-var d=new Date;console.log(d.getDate());
+var d = new Date();
+console.log(d.getDate())
