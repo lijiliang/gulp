@@ -17,6 +17,7 @@ const cache = require('gulp-cache');                   // 缓存，只对修改�
 const rev = require('gulp-rev');                       // 对文件名加MD5后缀
 const revCollector = require('gulp-rev-collector');    // 路径替换
 const autoprefixer = require('gulp-autoprefixer');     // 自动添加css3前缀
+const rename = require('gulp-rename');                 // 文件合并
 
 /*设置相关*/
 const config = require('./config.json');
@@ -94,11 +95,13 @@ gulp.task('css:dev', ()=>{
  */
 gulp.task('js:dev', ()=>{
     gulp.src(_jsFile)
+    .pipe(gulp.dest(_jsDistPath))   //输出一个未压缩版本
     .pipe(uglify({
         mangle: true,
         compress: true,//类型：Boolean 默认：true 是否完全压缩
         //mangle: {except: ['require' ,'exports' ,'module' ,'$']}//排除混淆关键字
     }))
+    .pipe(rename({extname: '.min.js'}))
     .pipe(gulp.dest(_jsDistPath))
     .on('end', ()=>{
         console.log('js 编译完成！')
@@ -134,14 +137,14 @@ gulp.task('image:min', ()=>{
 // dev 监听任务
 gulp.task('dev:watch',['browserSync'],()=>{
     // watch html
-    watch(_htmlFile,{event:['add','change']},(file)=>{
+    watch(_htmlFile,{event:['add','change','unlink']},(file)=>{
         console.log(file.path + ' complite！');
     })
     .pipe(fileinclude('@@'))
     .pipe(gulp.dest(_htmlDistPath));
 
     // watch less css
-    watch(_cssFile, {event:['add','change']}, (file)=>{
+    watch(_cssFile, {event:['add','change','unlink']}, (file)=>{
         console.log(file.path + ' complite！');
     })
     .pipe(sourcemaps.init())
@@ -152,7 +155,7 @@ gulp.task('dev:watch',['browserSync'],()=>{
     .pipe(gulp.dest(_cssDistPath));
 
     // watch js
-    watch(_jsFile, {event: ['add', 'change']}, (file)=>{
+    watch(_jsFile, {event: ['add', 'change','unlink']}, (file)=>{
         console.log(file.path + ' complite! ');
     })
     .pipe(uglify({
