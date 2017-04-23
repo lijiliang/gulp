@@ -23,6 +23,7 @@ const rename = require('gulp-rename');                 // 文件合并
 const config = require('./config.json');
 const srcDir = config.path.src;
 const distDir = config.path.dist;
+const debugDir = config.path.debug;
 
 /* 凡是以_开关的文件或者以_开关的文件夹下的文件都不执行编译 */
 
